@@ -128,7 +128,7 @@ jobs:
           echo "🔍 Checking code signing configuration..."
           
           # Check macOS signing
-          if [ -n "${{ secrets.CSC_LINK }}" ] && [ -n "${{ secrets.CSC_KEY_PASSWORD }}" ]; then
+          if [ -n "$CSC_LINK" ] && [ -n "$CSC_KEY_PASSWORD" ]; then
             echo "✅ macOS code signing configured"
             echo "MACOS_SIGN=true" >> $GITHUB_ENV
           else
@@ -137,7 +137,7 @@ jobs:
           fi
           
           # Check Windows signing
-          if [ -n "${{ secrets.WIN_CSC_LINK }}" ] && [ -n "${{ secrets.WIN_CSC_KEY_PASSWORD }}" ]; then
+          if [ -n "$WIN_CSC_LINK" ] && [ -n "$WIN_CSC_KEY_PASSWORD" ]; then
             echo "✅ Windows code signing configured"
             echo "WINDOWS_SIGN=true" >> $GITHUB_ENV
           else
@@ -146,13 +146,20 @@ jobs:
           fi
           
           # Check Apple notarization
-          if [ -n "${{ secrets.APPLE_ID }}" ] && [ -n "${{ secrets.APPLE_ID_PASS }}" ]; then
+          if [ -n "$APPLE_ID" ] && [ -n "$APPLE_ID_PASS" ]; then
             echo "✅ Apple notarization configured"
             echo "APPLE_NOTARIZE=true" >> $GITHUB_ENV
           else
             echo "⚠️  Apple notarization not configured"
             echo "APPLE_NOTARIZE=false" >> $GITHUB_ENV
           fi
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
 
       - name: Build application
         run: |
