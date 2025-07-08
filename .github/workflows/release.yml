@@ -124,6 +124,7 @@ jobs:
           sudo snap install snapcraft --classic
 
       - name: Check code signing setup
+        shell: bash
         run: |
           echo "🔍 Checking code signing configuration..."
           
