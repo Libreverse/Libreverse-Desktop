@@ -210,10 +210,50 @@ body {
     border-top: 1px solid #404041;
 }
 
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
 .footer p {
     margin: 0;
     color: #989ef1;
     font-size: 14px;
+}
+
+.app-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.version-text {
+    color: #666;
+    font-size: 12px;
+    font-family: monospace;
+}
+
+.update-notification {
+    font-size: 11px;
+    padding: 3px 6px;
+    border-radius: 3px;
+    text-align: center;
+    margin-top: 4px;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.update-notification.downloading {
+    color: #2196F3;
+    background: rgba(33, 150, 243, 0.1);
+}
+
+.update-notification.ready {
+    color: #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
 }
 
 .no-recent-urls {

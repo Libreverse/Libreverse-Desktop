@@ -7,6 +7,10 @@ class LibreverseDesktop {
         this.clearBtn = document.getElementById('clearBtn');
         this.loadingOverlay = document.getElementById('loadingOverlay');
         
+        // Update-related elements
+        this.appVersionElement = document.getElementById('appVersion');
+        this.updateNotification = document.getElementById('updateNotification');
+        
         // Debounce resize operations for better performance
         this.resizeDebounceTime = 16; // ~60fps
         this.resizeTimeout = null;
@@ -14,6 +18,8 @@ class LibreverseDesktop {
         this.initEventListeners();
         this.loadRecentUrls();
         this.setupDynamicResize();
+        this.initVersionDisplay();
+        this.initSilentUpdateListeners();
         
         // Auto-focus URL input
         this.urlInput.focus();
@@ -209,6 +215,59 @@ class LibreverseDesktop {
         }, 3000);
     }
 
+    async initVersionDisplay() {
+        try {
+            // Get and display app version
+            const version = await window.electronAPI.getAppVersion();
+            if (this.appVersionElement) {
+                this.appVersionElement.textContent = `v${version}`;
+            }
+        } catch (error) {
+            console.error('Failed to initialize version display:', error);
+        }
+    }
+    
+    initSilentUpdateListeners() {
+        // Listen for silent download progress (optional subtle indicator)
+        if (window.electronAPI && window.electronAPI.onSilentUpdateProgress) {
+            this.silentProgressListener = window.electronAPI.onSilentUpdateProgress((progress) => {
+                this.showSilentDownloadProgress(progress);
+            });
+        }
+        
+        // Listen for update ready notification
+        if (window.electronAPI && window.electronAPI.onUpdateReady) {
+            this.updateReadyListener = window.electronAPI.onUpdateReady((info) => {
+                this.showUpdateReady(info);
+            });
+        }
+    }
+    
+    showSilentDownloadProgress(progress) {
+        if (!this.updateNotification) return;
+        
+        // Show very subtle progress indicator
+        this.updateNotification.style.display = 'block';
+        this.updateNotification.className = 'update-notification downloading';
+        this.updateNotification.textContent = `Updating... ${Math.round(progress.percent)}%`;
+    }
+    
+    showUpdateReady(info) {
+        if (!this.updateNotification) return;
+        
+        // Show subtle notification that update is ready for next restart
+        this.updateNotification.style.display = 'block';
+        this.updateNotification.className = 'update-notification ready';
+        this.updateNotification.textContent = `Update ready (v${info.version}) - will install on restart`;
+        
+        // Hide the notification after 10 seconds
+        setTimeout(() => {
+            if (this.updateNotification) {
+                this.updateNotification.style.display = 'none';
+            }
+        }, 10000);
+    }
+
     // Cleanup method for proper memory management
     destroy() {
         // Remove event listeners
@@ -238,6 +297,16 @@ class LibreverseDesktop {
         // Clear timeouts
         if (this.resizeTimeout) {
             clearTimeout(this.resizeTimeout);
+        }
+        
+        // Clean up download progress listener
+        if (this.silentProgressListener && typeof this.silentProgressListener === 'function') {
+            this.silentProgressListener();
+        }
+        
+        // Clean up update ready listener
+        if (this.updateReadyListener && typeof this.updateReadyListener === 'function') {
+            this.updateReadyListener();
         }
     }
 }

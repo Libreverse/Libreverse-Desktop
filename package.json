@@ -9,6 +9,7 @@
     "dev:performance": "electron . --dev --enable-logging --trace-warnings --trace-deprecation",
     "build": "electron-builder",
     "dist": "electron-builder --publish=never",
+    "publish": "electron-builder --publish=always",
     "postinstall": "electron-builder install-app-deps"
   },
   "keywords": [
@@ -40,6 +41,11 @@
     "productName": "Libreverse Desktop",
     "directories": {
       "output": "dist"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "your-github-username",
+      "repo": "libreverse-desktop"
     },
     "files": [
       "main.js",
@@ -74,7 +80,8 @@
             "ia32"
           ]
         }
-      ]
+      ],
+      "publisherName": "Libreverse Desktop"
     },
     "linux": {
       "target": [
@@ -84,11 +91,15 @@
             "x64"
           ]
         }
-      ]
+      ],
+      "category": "Network"
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   }
 }

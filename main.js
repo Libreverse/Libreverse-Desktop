@@ -1,5 +1,10 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
+
+// Configure autoUpdater for fully automated updates
+autoUpdater.autoDownload = true; // Automatically download updates
+autoUpdater.autoInstallOnAppQuit = true; // Install on app quit
 
 // Dynamic import for ES module electron-store
 let Store;
@@ -23,6 +28,47 @@ async function initializeStore() {
     }
   });
 }
+
+// AutoUpdater event handlers - fully automated, no user prompts
+autoUpdater.on('checking-for-update', () => {
+  console.log('Checking for update...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available:', info.version, '- downloading in background...');
+  // Update downloads automatically, no user prompt needed
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('Update not available. Current version:', info.version);
+});
+
+autoUpdater.on('error', (err) => {
+  console.error('Error in auto-updater:', err);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = `Download speed: ${progressObj.bytesPerSecond}`;
+  log_message = log_message + ` - Downloaded ${progressObj.percent}%`;
+  log_message = log_message + ` (${progressObj.transferred}/${progressObj.total})`;
+  console.log(log_message);
+  
+  // Optionally notify the renderer about silent download progress
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('silent-download-progress', progressObj);
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded silently. Will install on next app restart. Version:', info.version);
+  
+  // Optionally show a subtle notification that update is ready
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('update-ready', info);
+  }
+  
+  // Update will be installed automatically when app quits/restarts
+});
 
 let mainWindow;
 let webViewWindow;
@@ -189,10 +235,33 @@ app.whenReady().then(async () => {
   app.commandLine.appendSwitch('max-old-space-size', '512');
   
   createMainWindow();
+  
+  // Check for updates after app is ready (delay to ensure UI is ready)
+  setTimeout(() => {
+    if (!process.defaultApp) { // Only check for updates in production
+      autoUpdater.checkForUpdatesAndNotify();
+      
+      // Set up periodic update checking every hour
+      setInterval(() => {
+        autoUpdater.checkForUpdatesAndNotify();
+      }, 60 * 60 * 1000); // 1 hour in milliseconds
+    }
+  }, 3000); // Wait 3 seconds after app start
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createMainWindow();
+    }
+  });
+  
+  // Check for updates when app regains focus (but throttle to avoid spam)
+  let lastFocusUpdateCheck = 0;
+  app.on('browser-window-focus', () => {
+    const now = Date.now();
+    // Only check if it's been more than 30 minutes since last focus check
+    if (!process.defaultApp && (now - lastFocusUpdateCheck) > 30 * 60 * 1000) {
+      lastFocusUpdateCheck = now;
+      autoUpdater.checkForUpdatesAndNotify();
     }
   });
 });
@@ -282,6 +351,10 @@ ipcMain.handle('clear-recent-urls', () => {
     console.error('Error clearing URLs:', error);
     return store ? store.get('recentUrls', []) : [];
   }
+});
+
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
 });
 
 // Debounced resize to improve performance
