@@ -84,7 +84,7 @@ Update the repository URLs in `package.json`:
 {
   "repository": {
     "type": "git",
-    "url": "https://github.com/Libreverse/libreverse-desktop.git"
+    "url": "https://github.com/Libreverse/Libreverse-Desktop.git"
   },
   "build": {
     "publish": {
