@@ -39,10 +39,9 @@
         "arch": ["x64", "arm64"]
       }
     ],
-    "hardenedRuntime": true,
+    "hardenedRuntime": false,
     "gatekeeperAssess": false,
     "identity": null,
-    "notarize": false,
     "sign": false
   },
   "win": {
