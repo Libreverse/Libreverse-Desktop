@@ -1,0 +1,23 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Define clipping path for rounded corners with padding -->
+    <clipPath id="roundedCorners">
+      <rect x="102" y="102" width="820" height="820" rx="184" ry="184"/>
+    </clipPath>
+  </defs>
+  
+  <!-- Transparent background -->
+  <rect width="1024" height="1024" fill="transparent"/>
+  
+  <!-- White background with rounded corners and Apple-style padding -->
+  <rect x="102" y="102" width="820" height="820" rx="184" ry="184" fill="white"/>
+  
+  <!-- Icon content clipped to rounded rectangle with Apple-style padding -->
+  <g clip-path="url(#roundedCorners)">
+    <g transform="translate(512, 512) scale(5.5, 5.5) translate(-60, -60)" stroke="#808080" stroke-width="7.5" fill="none">
+      <circle cx="60" cy="60" r="56.25"/>
+      <path d="m32.2659 110.055 9.6-103.99968"/>
+      <path d="m118.001 59.1713-82.3997 51.9997"/>
+    </g>
+  </g>
+</svg>

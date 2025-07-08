@@ -1,0 +1,262 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  version-and-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+      version_changed: ${{ steps.version.outputs.version_changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Determine version bump type
+        id: bump_type
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "bump_type=${{ github.event.inputs.version_bump }}" >> $GITHUB_OUTPUT
+          else
+            # Auto-determine based on commit messages
+            if git log --format=%B -n 1 | grep -q "BREAKING CHANGE\|major:"; then
+              echo "bump_type=major" >> $GITHUB_OUTPUT
+            elif git log --format=%B -n 1 | grep -q "feat:\|minor:"; then
+              echo "bump_type=minor" >> $GITHUB_OUTPUT
+            else
+              echo "bump_type=patch" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Bump version
+        id: version
+        run: |
+          # Get current version
+          current_version=$(node -p "require('./package.json').version")
+          echo "Current version: $current_version"
+          
+          # Bump version using npm
+          npm version ${{ steps.bump_type.outputs.bump_type }} --no-git-tag-version
+          
+          # Get new version
+          new_version=$(node -p "require('./package.json').version")
+          echo "New version: $new_version"
+          
+          # Check if version actually changed
+          if [ "$current_version" != "$new_version" ]; then
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+            echo "new_version=$new_version" >> $GITHUB_OUTPUT
+            
+            # Commit version bump
+            git add package.json
+            git commit -m "chore: bump version to $new_version"
+            
+            # Create and push tag
+            git tag "v$new_version"
+            git push origin main
+            git push origin "v$new_version"
+          else
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+            echo "new_version=$new_version" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: version-and-tag
+    if: needs.version-and-tag.outputs.version_changed == 'true'
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Snapcraft (Linux only)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo snap install snapcraft --classic
+
+      - name: Check code signing setup
+        run: |
+          echo "🔍 Checking code signing configuration..."
+          
+          # Check macOS signing
+          if [ -n "${{ secrets.CSC_LINK }}" ] && [ -n "${{ secrets.CSC_KEY_PASSWORD }}" ]; then
+            echo "✅ macOS code signing configured"
+            echo "MACOS_SIGN=true" >> $GITHUB_ENV
+          else
+            echo "⚠️  macOS code signing not configured (app will be unsigned)"
+            echo "MACOS_SIGN=false" >> $GITHUB_ENV
+          fi
+          
+          # Check Windows signing
+          if [ -n "${{ secrets.WIN_CSC_LINK }}" ] && [ -n "${{ secrets.WIN_CSC_KEY_PASSWORD }}" ]; then
+            echo "✅ Windows code signing configured"
+            echo "WINDOWS_SIGN=true" >> $GITHUB_ENV
+          else
+            echo "⚠️  Windows code signing not configured (app will be unsigned)"
+            echo "WINDOWS_SIGN=false" >> $GITHUB_ENV
+          fi
+          
+          # Check Apple notarization
+          if [ -n "${{ secrets.APPLE_ID }}" ] && [ -n "${{ secrets.APPLE_ID_PASS }}" ]; then
+            echo "✅ Apple notarization configured"
+            echo "APPLE_NOTARIZE=true" >> $GITHUB_ENV
+          else
+            echo "⚠️  Apple notarization not configured"
+            echo "APPLE_NOTARIZE=false" >> $GITHUB_ENV
+          fi
+
+      - name: Build application
+        run: npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+          # These environment variables help electron-builder understand what's available
+          MACOS_SIGN: ${{ env.MACOS_SIGN }}
+          WINDOWS_SIGN: ${{ env.WINDOWS_SIGN }}
+          APPLE_NOTARIZE: ${{ env.APPLE_NOTARIZE }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os }}
+          path: dist/
+          retention-days: 5
+
+  release:
+    needs: [version-and-tag, build]
+    if: needs.version-and-tag.outputs.version_changed == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./dist-artifacts
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Organize artifacts
+        run: |
+          mkdir -p ./release-files
+          
+          # Copy all built files to release-files directory
+          find ./dist-artifacts -name "*.dmg" -exec cp {} ./release-files/ \;
+          find ./dist-artifacts -name "*.exe" -exec cp {} ./release-files/ \;
+          find ./dist-artifacts -name "*.AppImage" -exec cp {} ./release-files/ \;
+          find ./dist-artifacts -name "*.deb" -exec cp {} ./release-files/ \;
+          find ./dist-artifacts -name "*.rpm" -exec cp {} ./release-files/ \;
+          find ./dist-artifacts -name "*.zip" -exec cp {} ./release-files/ \;
+          find ./dist-artifacts -name "*.tar.gz" -exec cp {} ./release-files/ \;
+          
+          # List files for verification
+          echo "Release files:"
+          ls -la ./release-files/
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          # Generate release notes from recent commits
+          echo "## What's Changed" > release_notes.md
+          echo "" >> release_notes.md
+          
+          # Get commits since last tag
+          if git describe --tags --abbrev=0 2>/dev/null; then
+            last_tag=$(git describe --tags --abbrev=0)
+            git log $last_tag..HEAD --pretty=format:"- %s" --no-merges >> release_notes.md
+          else
+            git log --pretty=format:"- %s" --no-merges -10 >> release_notes.md
+          fi
+          
+          echo "" >> release_notes.md
+          echo "## Downloads" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "Choose the appropriate download for your platform:" >> release_notes.md
+          echo "- **Windows**: \`.exe\` file" >> release_notes.md
+          echo "- **macOS**: \`.dmg\` file" >> release_notes.md
+          echo "- **Linux**: \`.AppImage\`, \`.deb\`, or \`.rpm\` file" >> release_notes.md
+          
+          # Output for use in release
+          echo 'RELEASE_NOTES<<EOF' >> $GITHUB_OUTPUT
+          cat release_notes.md >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.version-and-tag.outputs.new_version }}
+          name: Release v${{ needs.version-and-tag.outputs.new_version }}
+          body: ${{ steps.release_notes.outputs.RELEASE_NOTES }}
+          files: ./release-files/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to auto-updater
+        run: |
+          echo "Publishing release for auto-updater..."
+          npm run publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -10,7 +10,16 @@
     "build": "electron-builder",
     "dist": "electron-builder --publish=never",
     "publish": "electron-builder --publish=always",
+    "test": "echo \"No tests specified\" && exit 0",
     "postinstall": "electron-builder install-app-deps"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Libreverse/libreverse-desktop.git"
+  },
+  "homepage": "https://github.com/Libreverse/libreverse-desktop#readme",
+  "bugs": {
+    "url": "https://github.com/Libreverse/libreverse-desktop/issues"
   },
   "keywords": [
     "electron",
@@ -18,7 +27,7 @@
     "desktop",
     "performance"
   ],
-  "author": "Your Name",
+  "author": "George Baskerville",
   "license": "MIT",
   "devDependencies": {
     "cssnano": "^7.0.7",
@@ -39,12 +48,13 @@
   "build": {
     "appId": "com.Libreverse.desktop",
     "productName": "Libreverse Desktop",
+    "icon": "icon.png",
     "directories": {
       "output": "dist"
     },
     "publish": {
       "provider": "github",
-      "owner": "your-github-username",
+      "owner": "Libreverse",
       "repo": "libreverse-desktop"
     },
     "files": [
@@ -54,6 +64,7 @@
       "index.html",
       "styles.css",
       "hinted-Hack-Regular.woff2",
+      "icon.png",
       "node_modules/**/*"
     ],
     "compression": "maximum",
@@ -82,7 +93,7 @@
           ]
         }
       ],
-      "publisherName": "Libreverse Desktop"
+      "publisherName": "George Baskerville"
     },
     "linux": {
       "target": [
