@@ -173,8 +173,8 @@ jobs:
           # Clean any previous builds
           npm run clean || true
           
-          # Run build with debug output
-          npm run dist:debug
+          # Run build directly with electron-builder instead of npm script
+          npx electron-builder --publish=never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
