@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
+    <title>Libreverse Desktop</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Preload critical resources -->
+    <link rel="preload" href="renderer.js" as="script">
+</head>
+<body>
+    <div class="titlebar"></div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Connecting to instance...</div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1>Libreverse Desktop</h1>
+            <p>Connect to your Libreverse instance</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="url-input-section">
+                <label for="urlInput">Instance URL:</label>
+                <input type="text" id="urlInput" placeholder="https://your-libreverse-instance.com" autocomplete="url" autocapitalize="off" spellcheck="false" />
+                <button id="connectBtn" type="button">Connect</button>
+            </div>
+            
+            <div class="recent-urls-section">
+                <div class="recent-header">
+                    <h3>Recent Instances</h3>
+                    <button id="clearBtn" class="clear-btn" type="button">Clear</button>
+                </div>
+                <div id="recentUrls" class="recent-urls" role="list"></div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Enter the URL of your Libreverse instance to get started</p>
+        </div>
+    </div>
+
+    <!-- Performance monitoring for development -->
+    <script>
+        if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') {
+            const script = document.createElement('script');
+            script.src = 'performance-monitor.js';
+            document.head.appendChild(script);
+        }
+    </script>
+    <script src="renderer.js"></script>
+</body>
+</html>

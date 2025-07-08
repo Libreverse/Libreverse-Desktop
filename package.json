@@ -1,0 +1,77 @@
+{
+  "name": "Libreverse-desktop",
+  "version": "1.0.0",
+  "description": "Desktop app for Libreverse instances",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev --enable-logging",
+    "dev:performance": "electron . --dev --enable-logging --trace-warnings --trace-deprecation",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "electron",
+    "Libreverse",
+    "desktop",
+    "performance"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "dependencies": {
+    "electron-store": "^10.0.0"
+  },
+  "build": {
+    "appId": "com.Libreverse.desktop",
+    "productName": "Libreverse Desktop",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "styles.css",
+      "node_modules/**/*"
+    ],
+    "compression": "maximum",
+    "removePackageScripts": true,
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
