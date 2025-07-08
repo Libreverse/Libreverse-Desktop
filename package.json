@@ -15,11 +15,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Libreverse/libreverse-desktop.git"
+    "url": "https://github.com/Libreverse/Libreverse-Desktop.git"
   },
-  "homepage": "https://github.com/Libreverse/libreverse-desktop#readme",
+  "homepage": "https://github.com/Libreverse/Libreverse-Desktop#readme",
   "bugs": {
-    "url": "https://github.com/Libreverse/libreverse-desktop/issues"
+    "url": "https://github.com/Libreverse/Libreverse-Desktop/issues"
   },
   "keywords": [
     "electron",
@@ -28,7 +28,7 @@
     "performance"
   ],
   "author": "George Baskerville",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "devDependencies": {
     "cssnano": "^7.0.7",
     "electron": "^32.0.0",
@@ -55,7 +55,7 @@
     "publish": {
       "provider": "github",
       "owner": "Libreverse",
-      "repo": "libreverse-desktop"
+      "repo": "Libreverse-Desktop"
     },
     "files": [
       "main.js",

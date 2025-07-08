@@ -152,7 +152,7 @@ Check the console output for detailed performance metrics during development.
 
 ## 📝 License
 
-MIT - See LICENSE file for details
+AGPL-3.0 - See LICENSE file for details
 
 ---
 
