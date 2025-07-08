@@ -1,6 +1,6 @@
 {
   "name": "libreverse-desktop",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Desktop app for Libreverse instances",
   "main": "main.js",
   "scripts": {
