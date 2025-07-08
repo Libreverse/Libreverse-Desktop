@@ -53,6 +53,7 @@
       "renderer.js",
       "index.html",
       "styles.css",
+      "hinted-Hack-Regular.woff2",
       "node_modules/**/*"
     ],
     "compression": "maximum",
