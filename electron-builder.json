@@ -1,11 +1,11 @@
 {
-  "appId": "com.Libreverse.desktop",
-  "productName": "Libreverse Desktop",
-  "icon": "icon.png",
   "directories": {
     "output": "dist",
     "buildResources": "."
   },
+  "appId": "com.Libreverse.desktop",
+  "productName": "Libreverse Desktop",
+  "icon": "icon.png",
   "publish": {
     "provider": "github",
     "owner": "Libreverse",
@@ -36,34 +36,30 @@
     "target": [
       {
         "target": "dmg",
-        "arch": [
-          "x64",
-          "arm64"
-        ]
+        "arch": ["x64", "arm64"]
       }
     ],
     "hardenedRuntime": true,
-    "gatekeeperAssess": false
+    "gatekeeperAssess": false,
+    "identity": null,
+    "notarize": false,
+    "sign": false
   },
   "win": {
     "target": [
       {
         "target": "nsis",
-        "arch": [
-          "x64",
-          "ia32"
-        ]
+        "arch": ["x64", "ia32"]
       }
     ],
-    "publisherName": "George Baskerville"
+    "publisherName": "George Baskerville",
+    "sign": false
   },
   "linux": {
     "target": [
       {
         "target": "AppImage",
-        "arch": [
-          "x64"
-        ]
+        "arch": ["x64"]
       }
     ],
     "category": "Network"
