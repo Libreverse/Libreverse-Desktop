@@ -8,10 +8,13 @@
     "dev": "electron . --dev --enable-logging",
     "dev:performance": "electron . --dev --enable-logging --trace-warnings --trace-deprecation",
     "build": "electron-builder",
+    "build:debug": "DEBUG=electron-builder electron-builder",
     "dist": "electron-builder --publish=never",
+    "dist:debug": "DEBUG=electron-builder electron-builder --publish=never",
     "publish": "electron-builder --publish=always",
     "test": "echo \"No tests specified\" && exit 0",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "clean": "rm -rf dist/ && rm -rf node_modules/.cache/"
   },
   "repository": {
     "type": "git",
@@ -44,74 +47,5 @@
   "dependencies": {
     "electron-store": "^10.0.0",
     "electron-updater": "^6.6.2"
-  },
-  "build": {
-    "appId": "com.Libreverse.desktop",
-    "productName": "Libreverse Desktop",
-    "icon": "icon.png",
-    "directories": {
-      "output": "dist"
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "Libreverse",
-      "repo": "Libreverse-Desktop"
-    },
-    "files": [
-      "main.js",
-      "preload.js",
-      "renderer.js",
-      "index.html",
-      "styles.css",
-      "hinted-Hack-Regular.woff2",
-      "icon.png",
-      "node_modules/**/*"
-    ],
-    "compression": "maximum",
-    "removePackageScripts": true,
-    "mac": {
-      "category": "public.app-category.productivity",
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ],
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false
-    },
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
-        }
-      ],
-      "publisherName": "George Baskerville"
-    },
-    "linux": {
-      "target": [
-        {
-          "target": "AppImage",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "category": "Network"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "allowElevation": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
-    }
   }
 }

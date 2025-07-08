@@ -33,10 +33,22 @@ jobs:
         run: npm test --if-present
 
       - name: Build application (test build)
-        run: npm run dist
+        run: |
+          echo "🏗️  Starting build process..."
+          echo "Working directory: $(pwd)"
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+          echo "Electron version: $(npx electron --version)"
+          
+          # Clean any previous builds
+          npm run clean
+          
+          # Run build with debug output
+          npm run dist:debug
         env:
           # Don't publish during PR builds
           SKIP_PUBLISH: true
+          DEBUG: electron-builder
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

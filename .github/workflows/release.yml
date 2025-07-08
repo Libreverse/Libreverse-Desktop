@@ -155,7 +155,18 @@ jobs:
           fi
 
       - name: Build application
-        run: npm run dist
+        run: |
+          echo "🏗️  Starting build process..."
+          echo "Working directory: $(pwd)"
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+          echo "Electron version: $(npx electron --version)"
+          
+          # Clean any previous builds
+          npm run clean || true
+          
+          # Run build with debug output
+          npm run dist:debug
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -168,6 +179,7 @@ jobs:
           MACOS_SIGN: ${{ env.MACOS_SIGN }}
           WINDOWS_SIGN: ${{ env.WINDOWS_SIGN }}
           APPLE_NOTARIZE: ${{ env.APPLE_NOTARIZE }}
+          DEBUG: electron-builder
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
