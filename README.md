@@ -1,6 +1,6 @@
 # Libreverse Desktop
 
-A desktop application for connecting to Libreverse instances built with Electron.
+ARCHIVED - work has started on a new desktop app that's more tightly integrated: A desktop application for connecting to Libreverse instances built with Electron.
 
 ## Features
 
